@@ -18,7 +18,13 @@ jobs:
       - name: Build debug APK
         run: |
           SETTINGS=$(find . -name settings.gradle.kts -not -path './.git/*' | head -1)
-          if [ -z "$SETTINGS" ]; then echo "settings.gradle.kts not found"; exit 1; fi
+          if [ -z "$SETTINGS" ]; then
+            ZIP=$(find . -name '*.zip' -not -path './.git/*' | head -1)
+            if [ -z "$ZIP" ]; then echo "No Gradle project or zip file found"; exit 1; fi
+            mkdir -p /tmp/proj
+            unzip -q "$ZIP" -d /tmp/proj
+            SETTINGS=$(find /tmp/proj -name settings.gradle.kts | head -1)
+          fi
           cd "$(dirname "$SETTINGS")"
           gradle assembleDebug --no-daemon
           mkdir -p "$GITHUB_WORKSPACE/out"
